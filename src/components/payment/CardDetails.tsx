@@ -15,8 +15,8 @@ const CardDetails: React.FC<CardDetailsProps> = ({
   formData,
   handleChange,
 }) => {
-  const cardType = getCardType(formData.cardNumber);
-  const cardLogo = cardLogos[cardType];
+  // const cardType = getCardType(formData.cardNumber);
+  // const cardLogo = cardLogos[cardType];
 
   return (
     <>
