@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import Header from "../components/ui/Header";
 import CallToAction from "../components/ui/CallToAction";
 import CardDetails from "../components/payment/CardDetails";
 import AmountSelector from "../components/payment/AmountSelector";
 import RecurringDonation from "../components/payment/RecurringDonation";
 import { usePaymentForm } from "../hooks/usePaymentForm";
+import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 
 const PaymentForm: React.FC = () => {
   const {
@@ -15,6 +16,32 @@ const PaymentForm: React.FC = () => {
     handleSubmit,
     handleAmountSelect,
   } = usePaymentForm();
+
+  const [paymentMethod, setPaymentMethod] = useState<"card" | "paypal">("card");
+
+  // PayPal configuration
+  const paypalClientId = "YOUR_PAYPAL_CLIENT_ID"; // Replace with your PayPal Client ID
+  const createOrder = (data: any, actions: any) => {
+    return actions.order.create({
+      purchase_units: [
+        {
+          amount: {
+            value: formData.amount.toString(),
+            currency_code: "USD", // Adjust currency as needed
+          },
+        },
+      ],
+      intent: isRecurring ? "SUBSCRIPTION" : "CAPTURE",
+    });
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const onApprove = (data: any, actions: any) => {
+    return actions.order.capture().then((details: unknown) => {
+      alert(`Transaction completed by ${details.payer.name.given_name}`);
+      // Optionally, call your backend to save transaction details
+    });
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -38,76 +65,134 @@ const PaymentForm: React.FC = () => {
             {/* Encabezado del formulario */}
             <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-8 py-6 text-white">
               <h2 className="text-2xl font-bold">Realiza tu donación</h2>
-              <p className="text-orange-100">Tu generosidad alimenta esperanza</p>
+              <p className="text-orange-100">
+                Tu generosidad alimenta esperanza
+              </p>
             </div>
 
             {/* Cuerpo del formulario */}
             <div className="p-8">
-              <form className="space-y-6" onSubmit={handleSubmit}>
-                <div className="bg-orange-50 rounded-lg p-4 border-l-4 border-orange-500 mb-6">
-                  <p className="text-orange-800 font-medium">
-                    Tus datos están protegidos. Utilizamos tecnología de
-                    encriptación avanzada para garantizar la seguridad de tu
-                    información.
-                  </p>
-                </div>
-
-                <CardDetails formData={formData} handleChange={handleChange} />
-
-                <AmountSelector
-                  amount={formData.amount}
-                  handleAmountSelect={handleAmountSelect}
-                  handleChange={handleChange}
-                />
-
-                <RecurringDonation
-                  isRecurring={isRecurring}
-                  setIsRecurring={setIsRecurring}
-                  formData={formData}
-                  handleChange={handleChange}
-                />
-
-                {/* Botón de envío con mejora visual */}
+              {/* Payment Method Tabs */}
+              <div className="flex mb-6">
                 <button
-                  type="submit"
-                  className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors"
+                  className={`flex-1 py-2 px-4 text-center font-medium rounded-t-lg border-b-2 ${
+                    paymentMethod === "card"
+                      ? "border-orange-500 text-orange-500 bg-orange-50"
+                      : "border-gray-200 text-gray-500 hover:bg-gray-100"
+                  }`}
+                  onClick={() => setPaymentMethod("card")}
                 >
-                  {isRecurring ? "Autorizar Donación Recurrente" : "Realizar Donación"}
-                  <svg
-                    className="ml-2 h-5 w-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 7l5 5m0 0l-5 5m5-5H6"
-                    />
-                  </svg>
+                  Tarjeta
                 </button>
+                <button
+                  className={`flex-1 py-2 px-4 text-center font-medium rounded-t-lg border-b-2 ${
+                    paymentMethod === "paypal"
+                      ? "border-orange-500 text-orange-500 bg-orange-50"
+                      : "border-gray-200 text-gray-500 hover:bg-gray-100"
+                  }`}
+                  onClick={() => setPaymentMethod("paypal")}
+                >
+                  PayPal
+                </button>
+              </div>
 
-                {/* Mensaje de seguridad */}
-                <div className="flex items-center justify-center text-sm text-gray-500 mt-4">
-                  <svg
-                    className="h-4 w-4 mr-1"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
+              <div className="bg-orange-50 rounded-lg p-4 border-l-4 border-orange-500 mb-6">
+                <p className="text-orange-800 font-medium">
+                  Tus datos están protegidos. Utilizamos tecnología de
+                  encriptación avanzada para garantizar la seguridad de tu
+                  información.
+                </p>
+              </div>
+
+              {paymentMethod === "card" ? (
+                <form className="space-y-6" onSubmit={handleSubmit}>
+                  <CardDetails
+                    formData={formData}
+                    handleChange={handleChange}
+                  />
+
+                  <AmountSelector
+                    amount={formData.amount}
+                    handleAmountSelect={handleAmountSelect}
+                    handleChange={handleChange}
+                  />
+
+                  <RecurringDonation
+                    isRecurring={isRecurring}
+                    setIsRecurring={setIsRecurring}
+                    formData={formData}
+                    handleChange={handleChange}
+                  />
+
+                  {/* Botón de envío con mejora visual */}
+                  <button
+                    type="submit"
+                    className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    {isRecurring
+                      ? "Autorizar Donación Recurrente"
+                      : "Realizar Donación"}
+                    <svg
+                      className="ml-2 h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 7l5 5m0 0l-5 5m5-5H6"
+                      />
+                    </svg>
+                  </button>
+                </form>
+              ) : (
+                <PayPalScriptProvider options={{ clientId: "test" }}>
+                  {" "}
+                  <div className="space-y-6">
+                    <AmountSelector
+                      amount={formData.amount}
+                      handleAmountSelect={handleAmountSelect}
+                      handleChange={handleChange}
                     />
-                  </svg>
-                  Pago 100% seguro y encriptado
-                </div>
-              </form>
+
+                    <RecurringDonation
+                      isRecurring={isRecurring}
+                      setIsRecurring={setIsRecurring}
+                      formData={formData}
+                      handleChange={handleChange}
+                    />
+
+                    <PayPalButtons
+                      style={{ layout: "vertical" }}
+                      createOrder={createOrder}
+                      onApprove={onApprove}
+                      disabled={!formData.amount}
+                    />
+                  </div>
+                </PayPalScriptProvider>
+              )}
+
+              {/* Mensaje de seguridad */}
+              <div className="flex items-center justify-center text-sm text-gray-500 mt-4">
+                <svg
+                  className="h-4 w-4 mr-1"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                  />
+                </svg>
+                Pago 100% seguro y encriptado
+              </div>
             </div>
           </div>
 
@@ -137,10 +222,12 @@ const PaymentForm: React.FC = () => {
                   </div>
                 </div>
                 <div className="ml-4">
-                  <h4 className="text-lg font-medium text-gray-900">Impacto directo</h4>
+                  <h4 className="text-lg font-medium text-gray-900">
+                    Impacto directo
+                  </h4>
                   <p className="mt-2 text-gray-600">
-                    El 100% de tu donación se destina a programas de alimentación
-                    para familias vulnerables.
+                    El 100% de tu donación se destina a programas de
+                    alimentación para familias vulnerables.
                   </p>
                 </div>
               </div>
@@ -165,7 +252,9 @@ const PaymentForm: React.FC = () => {
                   </div>
                 </div>
                 <div className="ml-4">
-                  <h4 className="text-lg font-medium text-gray-900">Transparencia</h4>
+                  <h4 className="text-lg font-medium text-gray-900">
+                    Transparencia
+                  </h4>
                   <p className="mt-2 text-gray-600">
                     Publicamos informes periódicos para que puedas ver cómo se
                     utilizan los fondos.
@@ -193,7 +282,9 @@ const PaymentForm: React.FC = () => {
                   </div>
                 </div>
                 <div className="ml-4">
-                  <h4 className="text-lg font-medium text-gray-900">Alcance nacional</h4>
+                  <h4 className="text-lg font-medium text-gray-900">
+                    Alcance nacional
+                  </h4>
                   <p className="mt-2 text-gray-600">
                     Operamos en todo Ecuador, llegando a las comunidades más
                     necesitadas del país.
