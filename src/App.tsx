@@ -1,7 +1,16 @@
-import AppRouter from "./routes/AppRouter";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Home from './pages/Home';
+import PaymentForm from './pages/PaymentForm';
 
 function App() {
-  return <AppRouter />;
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/payment" element={<PaymentForm />} />
+      </Routes>
+    </Router>
+  );
 }
 
 export default App;

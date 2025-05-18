@@ -1,19 +1,25 @@
 import React, { useEffect, useState } from "react";
 import Modal from "react-modal";
-import { QRCodeSVG } from "qrcode.react";
+import { useNavigate } from "react-router-dom";
 import Header from "../components/ui/Header";
 import Hero from "../components/ui/Hero";
 import CallToAction from "../components/ui/CallToAction";
+import QRCode from "../components/ui/QrCode";
 
 Modal.setAppElement("#root");
 
 const Home: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
-  const [donationType, setDonationType] = useState<'one-time' | 'recurring'>('one-time');
+  const navigate = useNavigate();
 
   useEffect(() => {
     setShowModal(true);
   }, []);
+
+  const handlePaymentClick = () => {
+    setShowModal(false);
+    navigate("/payment");
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -32,56 +38,29 @@ const Home: React.FC = () => {
         contentLabel="Modal de Bienvenida"
       >
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-teal-700 mb-4">¡Apoya Nuestra Causa!</h2>
-          <p className="text-gray-600 mb-6">Escanea el código QR para realizar tu donación</p>
-          
-          <div className="bg-white p-4 rounded-lg shadow-md mb-6 inline-block">
-            <QRCodeSVG 
-              value="https://tu-link-de-donacion.com" 
-              size={200}
-              level="H"
-              includeMargin={true}
-            />
+          <h2 className="text-3xl font-bold text-teal-700 mb-4">
+            ¡Apoya Nuestra Causa!
+          </h2>
+          <p className="text-gray-600 mb-2">
+            Realiza tu donación de manera segura
+          </p>
+
+          <div className="my-6">
+            <p className="text-sm text-gray-500 mb-2">
+              Escanea el código QR para realizar tu donación
+            </p>
+            <QRCode />
           </div>
 
-          <div className="mb-6">
-            <div className="flex justify-center space-x-4 mb-4">
-              <button
-                onClick={() => setDonationType('one-time')}
-                className={`px-4 py-2 rounded-lg transition-colors duration-200 ${
-                  donationType === 'one-time'
-                    ? 'bg-teal-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                Donación Única
-              </button>
-              <button
-                onClick={() => setDonationType('recurring')}
-                className={`px-4 py-2 rounded-lg transition-colors duration-200 ${
-                  donationType === 'recurring'
-                    ? 'bg-teal-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                Donación Recurrente
-              </button>
-            </div>
-            
-            {donationType === 'recurring' && (
-              <div className="text-sm text-gray-600">
-                <p>Con la donación recurrente, apoyas nuestra causa de manera continua.</p>
-                <p className="mt-2">Puedes cancelar en cualquier momento.</p>
-              </div>
-            )}
+          <div className="border-t border-gray-200 pt-4">
+            <p className="text-sm text-gray-500 mb-4">O si prefieres:</p>
+            <button
+              onClick={handlePaymentClick}
+              className="w-full bg-teal-500 hover:bg-teal-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
+            >
+              Pago con Tarjeta
+            </button>
           </div>
-
-          <button
-            onClick={() => setShowModal(false)}
-            className="bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200"
-          >
-            Cerrar
-          </button>
         </div>
       </Modal>
     </div>
