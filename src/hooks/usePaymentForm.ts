@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 interface PaymentFormData {
   cardNumber: string;
@@ -10,6 +10,8 @@ interface PaymentFormData {
   clabe: string;
   frequency: string;
   amount: string;
+  identify: string;
+  email: string;
 }
 
 export const usePaymentForm = () => {
@@ -24,6 +26,8 @@ export const usePaymentForm = () => {
     clabe: "",
     frequency: "monthly",
     amount: "",
+    identify: "",
+    email: "",
   });
 
   const handleChange = (
@@ -35,9 +39,41 @@ export const usePaymentForm = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Datos del formulario:", formData);
-    // Aquí iría la lógica para procesar el pago
-    alert("¡Gracias por tu donación! Tu pago ha sido procesado.");
+
+    const baseData = {
+      cardDetails: {
+        cardNumber: formData.cardNumber,
+        expiry: formData.expiry,
+        cvv: formData.cvv,
+        name: formData.name,
+      },
+      amount: formData.amount,
+      paymentMethod: "card",
+    };
+
+    if (isRecurring) {
+      const recurringData = {
+        ...baseData,
+        fullName: formData.name,
+        email: formData.email,
+        cedula: formData.identify,
+        frequency: formData.frequency,
+        cardDetails: {
+          cardNumber: formData.cardNumber,
+          expiry: formData.expiry,
+          cvv: formData.cvv,
+          name: formData.name,
+        },
+      };
+
+      console.log("➡️ Enviando donación recurrente:", recurringData);
+      // Aquí podrías hacer un fetch o axios.post al backend
+    } else {
+      console.log("➡️ Enviando donación única:", baseData);
+      // Aquí enviar solo monto y método
+    }
+
+    alert("¡Gracias por tu donación!");
   };
 
   const handleAmountSelect = (amount: number) => {
@@ -55,4 +91,4 @@ export const usePaymentForm = () => {
     handleSubmit,
     handleAmountSelect,
   };
-}; 
+};
