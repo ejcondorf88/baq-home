@@ -1,25 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Modal from "react-modal";
-import { useNavigate } from "react-router-dom";
 import Header from "../components/ui/Header";
 import Hero from "../components/ui/Hero";
 import CallToAction from "../components/ui/CallToAction";
 import QRCode from "../components/ui/QrCode";
+import { useWelcomeModal } from "../hooks/useWelcomeModal";
 
 Modal.setAppElement("#root");
 
 const Home: React.FC = () => {
-  const [showModal, setShowModal] = useState(false);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    setShowModal(true);
-  }, []);
-
-  const handlePaymentClick = () => {
-    setShowModal(false);
-    navigate("/payment");
-  };
+  const { showModal, setShowModal, handlePaymentClick } = useWelcomeModal();
 
   return (
     <div className="flex flex-col min-h-screen">
