@@ -39,7 +39,6 @@ export const usePaymentForm = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
     const baseData = {
       cardDetails: {
         cardNumber: formData.cardNumber,
@@ -56,7 +55,7 @@ export const usePaymentForm = () => {
         ...baseData,
         fullName: formData.name,
         email: formData.email,
-        cedula: formData.identify,
+        identify: formData.identify,
         frequency: formData.frequency,
         cardDetails: {
           cardNumber: formData.cardNumber,
